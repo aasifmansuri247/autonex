@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Smartphone, Download, CheckCircle, ExternalLink, QrCode, Terminal, Copy, Check, ShieldCheck, Cpu } from 'lucide-react';
+import { Smartphone, Download, CheckCircle, ExternalLink, QrCode, Terminal, Copy, Check, ShieldCheck, Cpu, GitBranch, Github, PlayCircle, FileCode } from 'lucide-react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
 
 export const AndroidCenterModal: React.FC<Props> = ({ isOpen, onClose, onToast }) => {
   const { isInstallable, isInstalled, install } = usePWAInstall();
-  const [activeTab, setActiveTab] = useState<'install' | 'build' | 'qr'>('install');
+  const [activeTab, setActiveTab] = useState<'install' | 'github' | 'build' | 'qr'>('install');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   if (!isOpen) return null;
@@ -119,10 +119,10 @@ echo "========================================="
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-[#1c2740] bg-[#080d1b] px-4 gap-2">
+        <div className="flex border-b border-[#1c2740] bg-[#080d1b] px-4 gap-2 overflow-x-auto">
           <button
             onClick={() => setActiveTab('install')}
-            className={`py-3 px-4 text-xs font-semibold border-b-2 transition flex items-center gap-2 ${
+            className={`py-3 px-3 text-xs font-semibold border-b-2 transition flex items-center gap-2 whitespace-nowrap ${
               activeTab === 'install'
                 ? 'border-cyan-400 text-cyan-300'
                 : 'border-transparent text-[#9aa7c2] hover:text-white'
@@ -132,19 +132,30 @@ echo "========================================="
             1-Click Android WebAPK
           </button>
           <button
+            onClick={() => setActiveTab('github')}
+            className={`py-3 px-3 text-xs font-semibold border-b-2 transition flex items-center gap-2 whitespace-nowrap ${
+              activeTab === 'github'
+                ? 'border-cyan-400 text-cyan-300'
+                : 'border-transparent text-[#9aa7c2] hover:text-white'
+            }`}
+          >
+            <Github className="w-4 h-4 text-purple-400" />
+            GitHub APK Workflow
+          </button>
+          <button
             onClick={() => setActiveTab('build')}
-            className={`py-3 px-4 text-xs font-semibold border-b-2 transition flex items-center gap-2 ${
+            className={`py-3 px-3 text-xs font-semibold border-b-2 transition flex items-center gap-2 whitespace-nowrap ${
               activeTab === 'build'
                 ? 'border-cyan-400 text-cyan-300'
                 : 'border-transparent text-[#9aa7c2] hover:text-white'
             }`}
           >
             <Terminal className="w-4 h-4" />
-            Build .APK (Capacitor / CLI)
+            Local Build CLI
           </button>
           <button
             onClick={() => setActiveTab('qr')}
-            className={`py-3 px-4 text-xs font-semibold border-b-2 transition flex items-center gap-2 ${
+            className={`py-3 px-3 text-xs font-semibold border-b-2 transition flex items-center gap-2 whitespace-nowrap ${
               activeTab === 'qr'
                 ? 'border-cyan-400 text-cyan-300'
                 : 'border-transparent text-[#9aa7c2] hover:text-white'
@@ -157,6 +168,81 @@ echo "========================================="
 
         {/* Tab Content */}
         <div className="p-6 overflow-y-auto flex-1 space-y-5 text-sm">
+          {activeTab === 'github' && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl bg-gradient-to-r from-purple-950/40 via-blue-950/40 to-[#0c1324] border border-purple-500/30">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h4 className="font-semibold text-white text-base mb-1 flex items-center gap-2">
+                      <Github className="w-5 h-5 text-purple-400" />
+                      Automatic GitHub Actions APK Build
+                    </h4>
+                    <p className="text-xs text-[#9aa7c2] leading-relaxed">
+                      Every time you push code to GitHub, our workflow (<code className="text-cyan-300">.github/workflows/build-apk.yml</code>) automatically compiles a standalone Android APK and attaches it as a downloadable artifact.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <h5 className="text-xs font-bold text-[#67e8f9] uppercase tracking-wider">
+                  How to download your compiled APK from GitHub:
+                </h5>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="p-3.5 rounded-xl bg-[#080d1b] border border-[#24304a] space-y-1">
+                    <div className="text-purple-400 font-bold text-xs flex items-center gap-1.5">
+                      <GitBranch className="w-3.5 h-3.5" /> 1. Push or Trigger
+                    </div>
+                    <p className="text-xs text-[#cbd5e1]">
+                      Push changes to <code className="text-cyan-300 font-mono text-[11px]">main</code> or go to your GitHub repo &gt; <strong>Actions</strong> &gt; <strong>Build Android APK</strong> &gt; <strong>Run workflow</strong>.
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-[#080d1b] border border-[#24304a] space-y-1">
+                    <div className="text-cyan-400 font-bold text-xs flex items-center gap-1.5">
+                      <PlayCircle className="w-3.5 h-3.5" /> 2. Workflow Runs (~2m)
+                    </div>
+                    <p className="text-xs text-[#cbd5e1]">
+                      GitHub Actions installs Node, Java 17, Android SDK, runs Capacitor sync, and invokes <code className="text-cyan-300 font-mono text-[11px]">./gradlew assembleDebug</code>.
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-[#080d1b] border border-[#24304a] space-y-1">
+                    <div className="text-green-400 font-bold text-xs flex items-center gap-1.5">
+                      <Download className="w-3.5 h-3.5" /> 3. Download Artifact
+                    </div>
+                    <p className="text-xs text-[#cbd5e1]">
+                      Open the finished run, scroll down to <strong>Artifacts</strong>, and click <strong>AutoNex-Client-Portal-debug-apk</strong> to download your <code className="text-green-300 font-mono text-[11px]">app-debug.apk</code>!
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl bg-[#080d1b] border border-[#24304a] space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-white flex items-center gap-2">
+                    <FileCode className="w-4 h-4 text-cyan-400" />
+                    Workflow File: <code className="text-cyan-300">.github/workflows/build-apk.yml</code>
+                  </span>
+                  <button
+                    onClick={() =>
+                      copyToClipboard(
+                        `name: Build Android APK\n\non:\n  push:\n    branches: [ main, master ]\n  pull_request:\n    branches: [ main, master ]\n  workflow_dispatch:\n\njobs:\n  build-apk:\n    name: Build Android APK\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n      - uses: actions/setup-java@v4\n        with:\n          distribution: 'zulu'\n          java-version: '17'\n      - uses: android-actions/setup-android@v3\n      - run: npm install\n      - run: npm install --save @capacitor/core @capacitor/cli @capacitor/android\n      - run: npm run build\n      - run: npx cap add android || true\n      - run: npx cap sync android\n      - run: cd android && ./gradlew assembleDebug\n      - uses: actions/upload-artifact@v4\n        with:\n          name: AutoNex-Client-Portal-debug-apk\n          path: android/app/build/outputs/apk/debug/*.apk`,
+                        5
+                      )
+                    }
+                    className="text-cyan-400 hover:text-white flex items-center gap-1"
+                  >
+                    {copiedIndex === 5 ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    Copy YAML
+                  </button>
+                </div>
+                <p className="text-xs text-[#9aa7c2]">
+                  This workflow is already saved in your repository and ready to run as soon as you push!
+                </p>
+              </div>
+            </div>
+          )}
           {activeTab === 'install' && (
             <div className="space-y-4">
               <div className="p-4 rounded-xl bg-gradient-to-r from-blue-950/40 to-purple-950/40 border border-blue-500/20">
