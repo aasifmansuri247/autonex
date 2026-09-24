@@ -21,16 +21,22 @@ jobs:
         with:
           node-version: 20
 
-      - name: Setup Java JDK 17
+      - name: Setup Java JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '17'
+          java-version: '21'
 
       - name: Accept Android SDK Licenses & Verify SDK
         run: |
+          export ANDROID_HOME="/usr/local/lib/android/sdk"
+          if [ -d "$ANDROID_HOME/cmdline-tools/latest/bin" ]; then
+            export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
+          elif [ -d "$ANDROID_HOME/cmdline-tools/16.0/bin" ]; then
+            export PATH="$ANDROID_HOME/cmdline-tools/16.0/bin:$PATH"
+          fi
           echo "ANDROID_HOME: $ANDROID_HOME"
-          echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
+          mkdir -p "$ANDROID_HOME/licenses" || true
           yes | sdkmanager --licenses || true
 
       - name: Install Node dependencies
@@ -53,16 +59,22 @@ jobs:
           npx cap sync android
 
       - name: Build Debug APK with Gradle
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8"
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Locate Generated APK
         id: find_apk
         run: |
-          APK_PATH=$(find android/app/build/outputs/apk/debug -name "*.apk" | head -n 1)
-          echo "Found APK: $APK_PATH"
+          APK_PATH=$(find android/app/build/outputs/apk -name "*.apk" | head -n 1)
+          if [ -z "$APK_PATH" ]; then
+            echo "::error::Could not find compiled APK in android/app/build/outputs/apk"
+            exit 1
+          fi
+          echo "Found APK at: $APK_PATH"
           echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
 
       - name: Upload APK Artifact
