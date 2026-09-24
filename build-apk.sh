@@ -5,7 +5,7 @@ echo "=========================================================="
 echo "          AutoNex Android APK Build Assistant             "
 echo "=========================================================="
 
-echo "📦 1. Building web application..."
+echo "📦 1. Building web application with legacy WebView compatibility..."
 npm run build
 
 echo "⚡ 2. Installing Capacitor Android dependencies..."
@@ -17,7 +17,7 @@ if [ ! -d "android" ]; then
 fi
 npx cap sync android
 
-echo "🔧 4. Resolving duplicate class conflicts and configuring Android settings..."
+echo "🔧 4. Resolving duplicate class conflicts & configuring Android settings..."
 if [ -f "android/gradle.properties" ]; then
   grep -q "android.useAndroidX" android/gradle.properties || echo "android.useAndroidX=true" >> android/gradle.properties
   grep -q "android.enableJetifier" android/gradle.properties || echo "android.enableJetifier=true" >> android/gradle.properties
@@ -34,6 +34,11 @@ configurations.all {
 }
 EOF
   fi
+fi
+
+MANIFEST="android/app/src/main/AndroidManifest.xml"
+if [ -f "$MANIFEST" ]; then
+  sed -i 's/<application/<application android:usesCleartextTraffic="true" android:requestLegacyExternalStorage="true"/' "$MANIFEST" || true
 fi
 
 echo "🔨 5. Compiling Android Debug APK via Gradle..."
