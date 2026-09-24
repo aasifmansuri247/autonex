@@ -203,7 +203,7 @@ echo "========================================="
                       <PlayCircle className="w-3.5 h-3.5" /> 2. Workflow Runs (~2m)
                     </div>
                     <p className="text-xs text-[#cbd5e1]">
-                      GitHub Actions installs Node, Java 17, Android SDK, runs Capacitor sync, and invokes <code className="text-cyan-300 font-mono text-[11px]">./gradlew assembleDebug</code>.
+                      GitHub Actions installs Node, Java 21, Android SDK, runs Capacitor sync, and invokes <code className="text-cyan-300 font-mono text-[11px]">./gradlew assembleDebug</code>.
                     </p>
                   </div>
 
@@ -227,7 +227,7 @@ echo "========================================="
                   <button
                     onClick={() =>
                       copyToClipboard(
-                        `name: Build Android APK\n\non:\n  push:\n    branches: [ main, master ]\n  pull_request:\n    branches: [ main, master ]\n  workflow_dispatch:\n\njobs:\n  build-apk:\n    name: Build Android APK\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n      - uses: actions/setup-java@v4\n        with:\n          distribution: 'zulu'\n          java-version: '17'\n      - run: yes | sdkmanager --licenses || true\n      - run: npm install --legacy-peer-deps\n      - run: npm install --save @capacitor/core @capacitor/cli @capacitor/android --legacy-peer-deps\n      - run: npm run build\n      - run: npx cap add android || true\n      - run: npx cap sync android\n      - run: cd android && ./gradlew assembleDebug\n      - uses: actions/upload-artifact@v4\n        with:\n          name: AutoNex-Client-Portal-debug-apk\n          path: android/app/build/outputs/apk/debug/*.apk`,
+                        `name: Build Android APK\n\non:\n  push:\n    branches: [ main, master ]\n  pull_request:\n    branches: [ main, master ]\n  workflow_dispatch:\n\njobs:\n  build-apk:\n    name: Build Android APK\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n      - uses: actions/setup-java@v4\n        with:\n          distribution: 'zulu'\n          java-version: '21'\n      - run: yes | sdkmanager --licenses || true\n      - run: npm install --legacy-peer-deps\n      - run: npm install --save @capacitor/core @capacitor/cli @capacitor/android --legacy-peer-deps\n      - run: npm run build\n      - run: npx cap add android || true\n      - run: npx cap sync android\n      - run: cd android && ./gradlew assembleDebug --no-daemon\n      - uses: actions/upload-artifact@v4\n        with:\n          name: AutoNex-Client-Portal-debug-apk\n          path: android/app/build/outputs/apk/debug/*.apk`,
                         5
                       )
                     }
