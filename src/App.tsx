@@ -6,12 +6,9 @@ import {
   Zap,
   Plus,
   RefreshCw,
-  Tag,
-  Smartphone,
-  Server,
   LogOut,
-  AlertCircle,
-  Filter
+  User,
+  Sliders
 } from 'lucide-react';
 import { Post, DashboardData, UserSession, OfferInfo } from './types';
 import {
@@ -28,11 +25,11 @@ import { BottomNav } from './components/BottomNav';
 import { PostCard } from './components/PostCard';
 import { ReviewModal } from './components/ReviewModal';
 import { CreatePostModal } from './components/CreatePostModal';
-import { AndroidCenterModal } from './components/AndroidCenterModal';
 import { ApiSettingsModal } from './components/ApiSettingsModal';
 import { OfferPage } from './components/OfferPage';
+import { AccountView } from './components/AccountView';
+import { LogoutConfirmModal } from './components/LogoutConfirmModal';
 import { Toast } from './components/Toast';
-import { PWAInstallBanner } from './components/PWAInstallBanner';
 import { OfflineIndicator } from './components/OfflineIndicator';
 
 export default function App() {
@@ -46,8 +43,8 @@ export default function App() {
   // Modals
   const [reviewPost, setReviewPost] = useState<Post | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false);
-  const [isAndroidCenterOpen, setIsAndroidCenterOpen] = useState<boolean>(false);
   const [isApiSettingsOpen, setIsApiSettingsOpen] = useState<boolean>(false);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState<boolean>(false);
 
   // Toast
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -82,10 +79,10 @@ export default function App() {
       if (err.message === 'SESSION_EXPIRED') {
         clearSession();
         setSessionState(null);
-        showToast('Session expired. Please login again.');
+        showToast('Session expired. Please sign in again.');
       } else {
         console.error('Error loading dashboard:', err);
-        showToast(err.message || 'Could not connect to n8n server.');
+        showToast(err.message || 'Could not connect to AutoNex server.');
       }
     } finally {
       setIsLoading(false);
@@ -103,12 +100,12 @@ export default function App() {
     setSessionState(null);
     setDashboardData(null);
     setPosts([]);
+    setIsLogoutConfirmOpen(false);
     showToast('Logged out of AutoNex');
   };
 
   const handleApprove = async (id: string) => {
     if (!session) return;
-    if (!window.confirm('Approve and publish this post to Instagram?')) return;
 
     showToast('Publishing post to Instagram...');
     try {
@@ -123,7 +120,6 @@ export default function App() {
 
   const handleRegenerate = async (id: string) => {
     if (!session) return;
-    if (!window.confirm('Regenerate this post? The existing image and caption will be replaced.')) return;
 
     showToast('Regenerating post with AI...');
     try {
@@ -160,19 +156,13 @@ export default function App() {
     return d.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
   };
 
-  // If not logged in, show Login view
+  // If not logged in, show Pure Mobile Login view
   if (!session) {
     return (
       <>
         <LoginView
           onLoginSuccess={() => setSessionState(getSession())}
-          onOpenAndroidCenter={() => setIsAndroidCenterOpen(true)}
           onOpenApiSettings={() => setIsApiSettingsOpen(true)}
-          onToast={showToast}
-        />
-        <AndroidCenterModal
-          isOpen={isAndroidCenterOpen}
-          onClose={() => setIsAndroidCenterOpen(false)}
           onToast={showToast}
         />
         <ApiSettingsModal
@@ -212,83 +202,73 @@ export default function App() {
   const offerDate = dashboardData?.offer?.end_date || dashboardData?.offer?.date || '';
 
   return (
-    <div className="min-h-screen bg-[#070b18] text-[#f5f7ff] flex flex-col">
-      {/* PWA Install Banner */}
-      <PWAInstallBanner
-        onOpenAndroidCenter={() => setIsAndroidCenterOpen(true)}
-        onToast={showToast}
-      />
-
+    <div className="min-h-screen bg-[#070b18] text-[#f5f7ff] flex flex-col font-sans select-none antialiased">
       {/* Desktop Sidebar */}
       <Sidebar
         activePage={activePage}
         onChangePage={setActivePage}
         pendingCount={pendingPosts.length}
-        onLogout={handleLogout}
-        onOpenAndroidCenter={() => setIsAndroidCenterOpen(true)}
+        onLogout={() => setIsLogoutConfirmOpen(true)}
         onOpenApiSettings={() => setIsApiSettingsOpen(true)}
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 md:ml-64 p-4 sm:p-6 md:p-8 max-w-7xl pb-24 md:pb-8">
-        {/* Topbar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8 pb-4 border-b border-[#1c2740]">
+      <main className="flex-1 md:ml-64 p-3.5 sm:p-6 md:p-8 max-w-7xl pb-24 md:pb-8 pt-[max(0.875rem,env(safe-area-inset-top))]">
+        {/* Topbar: Mobile & Desktop Native Header */}
+        <div className="flex items-center justify-between gap-3 mb-5 sm:mb-8 pb-3.5 border-b border-[#1c2740]">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-white capitalize">
+              <h2 className="text-lg sm:text-2xl font-extrabold text-white capitalize">
                 {activePage === 'home'
                   ? 'Dashboard'
                   : activePage === 'posts'
                   ? 'Posts & Content'
                   : activePage === 'approval'
                   ? 'Pending Approvals'
-                  : 'Manage Offer'}
+                  : activePage === 'offer'
+                  ? 'Manage Offer'
+                  : 'Account & Settings'}
               </h2>
               {isLoading && (
                 <RefreshCw className="w-4 h-4 text-cyan-400 animate-spin" />
               )}
             </div>
-            <p className="text-xs text-[#9aa7c2] mt-1">
-              Manage your AI-generated social media content and approvals.
+            <p className="text-[11px] sm:text-xs text-[#9aa7c2] mt-0.5">
+              {businessName}
             </p>
           </div>
 
-          {/* User profile & Android shortcut */}
-          <div className="flex items-center gap-3 self-end sm:self-center">
+          {/* Quick Header Actions: Easy Logout Button & User Avatar */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* EASY LOGOUT BUTTON (Prominent in Header) */}
             <button
-              onClick={() => setIsAndroidCenterOpen(true)}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-cyan-300 bg-cyan-950/40 border border-cyan-500/30 hover:bg-cyan-900/50 transition"
-              title="Android APK Center"
+              onClick={() => setIsLogoutConfirmOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-red-400 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 active:scale-95 transition shadow-sm"
+              title="Log Out of AutoNex"
             >
-              <Smartphone className="w-3.5 h-3.5 text-cyan-400" />
-              Android APK
+              <LogOut className="w-3.5 h-3.5 text-red-400" />
+              <span className="hidden sm:inline">Log Out</span>
             </button>
 
+            {/* Quick Profile Pill */}
             <button
-              onClick={() => setIsApiSettingsOpen(true)}
-              className="p-2 rounded-xl text-[#9aa7c2] bg-[#111a30] border border-[#24304a] hover:text-white transition"
-              title="Connection Host Settings"
+              onClick={() => setActivePage('account')}
+              className="flex items-center gap-2 p-1 pl-2.5 rounded-2xl bg-[#0e1628] border border-[#24304a] hover:border-cyan-500/40 transition active:scale-95"
+              title="Account & Settings"
             >
-              <Server className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-center gap-2.5 pl-2 border-l border-[#1c2740]">
-              <div className="text-right">
-                <strong className="block text-xs font-bold text-white leading-tight">
-                  {businessName}
-                </strong>
-                <span className="text-[10px] text-[#9aa7c2]">Client Portal</span>
-              </div>
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-xs font-extrabold text-white shadow-md shadow-cyan-500/20">
+              <span className="text-[11px] font-bold text-white hidden sm:inline max-w-[120px] truncate">
+                {businessName}
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-xs font-black text-white shadow-md shadow-cyan-500/20">
                 {avatarInitials}
               </div>
-            </div>
+            </button>
           </div>
         </div>
 
         {/* PAGE 1: HOME (Dashboard) */}
         {activePage === 'home' && (
-          <div className="space-y-6">
+          <div className="space-y-5 sm:space-y-6">
             {/* Stat Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <div className="bg-gradient-to-br from-[#0d1426] to-[#0b1120] border border-[#24304a] rounded-2xl p-4 sm:p-5 shadow-lg">
@@ -411,7 +391,7 @@ export default function App() {
                 <h3 className="text-base font-bold text-white">All Posts</h3>
                 <button
                   onClick={() => setIsCreateOpen(true)}
-                  className="px-3.5 py-1.5 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 shadow-md shadow-blue-500/20 transition flex items-center gap-1.5"
+                  className="px-3.5 py-1.5 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 active:scale-95 shadow-md shadow-blue-500/20 transition flex items-center gap-1.5"
                 >
                   <Plus className="w-3.5 h-3.5" /> Create post
                 </button>
@@ -517,14 +497,25 @@ export default function App() {
             onToast={showToast}
           />
         )}
+
+        {/* PAGE 5: ACCOUNT & EASY LOGOUT */}
+        {activePage === 'account' && (
+          <AccountView
+            session={session}
+            dashboardData={dashboardData}
+            onLogout={() => setIsLogoutConfirmOpen(true)}
+            onOpenApiSettings={() => setIsApiSettingsOpen(true)}
+            onToast={showToast}
+            onRefresh={loadDashboard}
+          />
+        )}
       </main>
 
-      {/* Mobile Android Bottom Navigation */}
+      {/* Pure Mobile Bottom Navigation Bar */}
       <BottomNav
         activePage={activePage}
         onChangePage={setActivePage}
         pendingCount={pendingPosts.length}
-        onOpenAndroidCenter={() => setIsAndroidCenterOpen(true)}
       />
 
       {/* Modals */}
@@ -544,17 +535,18 @@ export default function App() {
         onToast={showToast}
       />
 
-      <AndroidCenterModal
-        isOpen={isAndroidCenterOpen}
-        onClose={() => setIsAndroidCenterOpen(false)}
-        onToast={showToast}
-      />
-
       <ApiSettingsModal
         isOpen={isApiSettingsOpen}
         onClose={() => setIsApiSettingsOpen(false)}
         onToast={showToast}
         onConfigChanged={loadDashboard}
+      />
+
+      <LogoutConfirmModal
+        isOpen={isLogoutConfirmOpen}
+        onClose={() => setIsLogoutConfirmOpen(false)}
+        onConfirm={handleLogout}
+        businessName={businessName}
       />
 
       <Toast message={toastMessage} />

@@ -1,12 +1,11 @@
 import React from 'react';
-import { LayoutDashboard, Image as ImageIcon, CheckCircle, Tag, LogOut, Smartphone, Settings, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Image as ImageIcon, CheckCircle, Tag, LogOut, Settings, User } from 'lucide-react';
 
 interface Props {
   activePage: string;
   onChangePage: (page: string) => void;
   pendingCount: number;
   onLogout: () => void;
-  onOpenAndroidCenter: () => void;
   onOpenApiSettings: () => void;
 }
 
@@ -15,14 +14,14 @@ export const Sidebar: React.FC<Props> = ({
   onChangePage,
   pendingCount,
   onLogout,
-  onOpenAndroidCenter,
   onOpenApiSettings
 }) => {
   const navItems = [
     { id: 'home', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'posts', label: 'Posts', icon: ImageIcon },
     { id: 'approval', label: 'Approvals', icon: CheckCircle, badge: pendingCount },
-    { id: 'offer', label: 'Offer', icon: Tag }
+    { id: 'offer', label: 'Offer', icon: Tag },
+    { id: 'account', label: 'Account', icon: User }
   ];
 
   return (
@@ -41,7 +40,7 @@ export const Sidebar: React.FC<Props> = ({
               AI
             </span>
           </h1>
-          <p className="text-[10px] text-[#9aa7c2]">Client Automation Portal</p>
+          <p className="text-[10px] text-[#9aa7c2]">Client Mobile Portal</p>
         </div>
       </div>
 
@@ -73,33 +72,25 @@ export const Sidebar: React.FC<Props> = ({
           );
         })}
 
-        {/* Mobile / Android APK Center shortcut */}
-        <div className="pt-4 mt-4 border-t border-[#1c2740] space-y-1.5">
-          <button
-            onClick={onOpenAndroidCenter}
-            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-cyan-300 bg-cyan-950/20 border border-cyan-500/30 hover:bg-cyan-900/30 transition group"
-          >
-            <Smartphone className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform" />
-            <span>Android APK & App</span>
-          </button>
+        <div className="pt-4 mt-4 border-t border-[#1c2740]">
           <button
             onClick={onOpenApiSettings}
             className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-[#9eabc4] hover:bg-[#111a30]/60 hover:text-white transition"
           >
             <Settings className="w-4 h-4" />
-            <span>API Server Host</span>
+            <span>Server Host Settings</span>
           </button>
         </div>
       </nav>
 
-      {/* Footer User Info & Logout */}
+      {/* Footer User Info & Prominent Logout */}
       <div className="pt-4 border-t border-[#1c2740]">
         <button
           onClick={onLogout}
-          className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-[#121b31] border border-[#24304a] text-white hover:border-red-500/40 hover:text-red-400 transition"
+          className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 hover:text-white transition active:scale-95 shadow-sm"
         >
           <LogOut className="w-3.5 h-3.5" />
-          <span>Logout</span>
+          <span>Log Out</span>
         </button>
       </div>
     </aside>

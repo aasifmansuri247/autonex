@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
-import { Smartphone, Server, LogIn, Lock, Mail, ShieldAlert } from 'lucide-react';
+import { Server, LogIn, Lock, Mail } from 'lucide-react';
 import { loginApi, setSession } from '../services/api';
 
 interface Props {
   onLoginSuccess: () => void;
-  onOpenAndroidCenter: () => void;
   onOpenApiSettings: () => void;
   onToast: (msg: string) => void;
 }
 
 export const LoginView: React.FC<Props> = ({
   onLoginSuccess,
-  onOpenAndroidCenter,
   onOpenApiSettings,
   onToast
 }) => {
@@ -30,7 +28,7 @@ export const LoginView: React.FC<Props> = ({
     try {
       const data = await loginApi(email.trim(), password);
       setSession(data.token, data.client_id, data.expires_at, email.trim());
-      onToast('Welcome to AutoNex Client Portal!');
+      onToast('Welcome to AutoNex!');
       onLoginSuccess();
     } catch (err: any) {
       console.error('Login error:', err);
@@ -46,27 +44,20 @@ export const LoginView: React.FC<Props> = ({
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 md:p-6 bg-gradient-to-b from-[#070b18] via-[#0d1325] to-[#070b18] relative">
-      {/* Top right utility bar */}
+    <div className="min-h-screen w-full flex items-center justify-center p-4 md:p-6 bg-gradient-to-b from-[#070b18] via-[#0d1325] to-[#070b18] relative pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+      {/* Top right server host settings button */}
       <div className="absolute top-4 right-4 flex items-center gap-2">
         <button
-          onClick={onOpenAndroidCenter}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-cyan-300 bg-cyan-950/40 border border-cyan-500/30 hover:bg-cyan-900/50 transition shadow-sm"
-        >
-          <Smartphone className="w-3.5 h-3.5" />
-          Android App / APK
-        </button>
-        <button
           onClick={onOpenApiSettings}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-[#9aa7c2] bg-[#111a30] border border-[#24304a] hover:text-white transition"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-[#9aa7c2] bg-[#111a30]/80 border border-[#24304a] hover:text-white transition"
           title="Server Connection Settings"
         >
           <Server className="w-3.5 h-3.5" />
-          Host Settings
+          <span>Server Host</span>
         </button>
       </div>
 
-      <div className="w-full max-w-md bg-[#0d1325]/95 border border-[#24304a] rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-xl animate-in zoom-in-95 duration-200">
+      <div className="w-full max-w-md bg-[#0d1325]/95 border border-[#24304a] rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
         {/* Brand */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center mb-3">
@@ -76,15 +67,15 @@ export const LoginView: React.FC<Props> = ({
               className="w-16 h-16 object-contain drop-shadow-[0_0_15px_rgba(22,217,255,0.4)]"
             />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Client Portal</h1>
-          <p className="text-xs text-[#9aa7c2] mt-1">AI automation, simplified.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-white">AutoNex Portal</h1>
+          <p className="text-xs text-[#9aa7c2] mt-1">Social Media Automation for Clients</p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-medium text-[#cbd5e1] mb-1.5">
-              Email
+              Client Email
             </label>
             <div className="relative">
               <Mail className="w-4 h-4 text-[#9aa7c2] absolute left-3.5 top-3.5" />
@@ -94,7 +85,7 @@ export const LoginView: React.FC<Props> = ({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="client@example.com"
-                className="w-full bg-[#080d1b] border border-[#24304a] text-white rounded-xl pl-10 pr-3.5 py-2.5 text-xs focus:border-cyan-400 outline-none transition"
+                className="w-full bg-[#080d1b] border border-[#24304a] text-white rounded-xl pl-10 pr-3.5 py-3 text-xs focus:border-cyan-400 outline-none transition"
               />
             </div>
           </div>
@@ -111,7 +102,7 @@ export const LoginView: React.FC<Props> = ({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-[#080d1b] border border-[#24304a] text-white rounded-xl pl-10 pr-3.5 py-2.5 text-xs focus:border-cyan-400 outline-none transition"
+                className="w-full bg-[#080d1b] border border-[#24304a] text-white rounded-xl pl-10 pr-3.5 py-3 text-xs focus:border-cyan-400 outline-none transition"
               />
             </div>
           </div>
@@ -119,7 +110,7 @@ export const LoginView: React.FC<Props> = ({
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 shadow-lg shadow-blue-500/25 transition disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
+            className="w-full py-3.5 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 active:scale-[0.98] shadow-lg shadow-blue-500/25 transition disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
           >
             {loading ? (
               <>
@@ -129,21 +120,21 @@ export const LoginView: React.FC<Props> = ({
             ) : (
               <>
                 <LogIn className="w-4 h-4" />
-                Sign in
+                Sign In
               </>
             )}
           </button>
         </form>
 
-        <div className="mt-5 text-center space-y-2">
+        <div className="mt-6 text-center space-y-2">
           <p className="text-[11px] text-[#9aa7c2]">
-            Sign in with your AutoNex client account.
+            AutoNex Automated Client App
           </p>
-          <div className="flex items-center justify-center gap-3 pt-2 border-t border-[#1c2740]">
+          <div className="flex items-center justify-center gap-3 pt-3 border-t border-[#1c2740]">
             <button
               type="button"
               onClick={handleQuickDemo}
-              className="text-[11px] text-cyan-400 hover:underline"
+              className="text-xs text-cyan-400 hover:underline font-medium"
             >
               Fill Sample Credentials
             </button>
